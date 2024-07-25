@@ -48,7 +48,7 @@ public final class Enxada_WindCharge
    public boolean limitValues;
 
    // Lista de WindCharges criando partículas
-   public List<WindCharge> windCharges = new ArrayList<>();
+   public List<WindCharge> windCharges;
 
    // Runnable que cria as particulas
    BukkitTask windChargeParticleRunnable;
@@ -57,10 +57,11 @@ public final class Enxada_WindCharge
    public void onEnable()
    {
       // Definindo os objetos
+      instance = this;
       executor = Executors.newSingleThreadExecutor();
       executor2 = Executors.newSingleThreadScheduledExecutor();
       saveDefaultConfig();
-      instance = this;
+      windCharges = new ArrayList<>();
       loadConfigValues();
 
       // Definindo os comandos
@@ -73,12 +74,6 @@ public final class Enxada_WindCharge
 
       // Registrando o listener dos eventos
       getServer().getPluginManager().registerEvents(new WindChargeListener(), this);
-   }
-
-   @Override
-   public void onDisable()
-   {
-      instance = null;
    }
 
    // Lógica de reload do plugins

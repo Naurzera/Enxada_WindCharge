@@ -53,18 +53,18 @@ public class WindChargeListener
          float explosionSize = Enxada_WindCharge.getInstance().windChargeExplosion;
 
          // Aqui vamos configurar para os jogadores nesse raio de explosão não tomarem o dano.
-         // Adicionamos +1 em cada direção pois o cálculo de área e esferas do minecraft pode
+         // Multiplicamos *2 em cada direção pois o cálculo de área e esferas do minecraft pode
          // divergir em alguns casos. (Claro, o jogo é quadrado hehe)
          for (Entity entity1 : location.getWorld()
-             .getNearbyEntities(location, explosionSize+1.0, explosionSize+1.0, explosionSize+1.0))
+             .getNearbyEntities(location, explosionSize*2, explosionSize*2, explosionSize*2))
          {
             if (entity1 instanceof Player) playersImmunes.add((Player) entity1);
          }
 
-         // Tirar os jogadores depois de 1 tick
+         // Tirar os jogadores depois de 2 ticks
          Enxada_WindCharge.getInstance().executor2.schedule(() -> {
             playersImmunes.clear();
-         },50, TimeUnit.MILLISECONDS);
+         },100, TimeUnit.MILLISECONDS);
 
          // Criando a explosão
          world.createExplosion(location, explosionSize,false,false, windCharge);

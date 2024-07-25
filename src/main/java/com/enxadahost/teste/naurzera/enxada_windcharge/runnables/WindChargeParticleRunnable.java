@@ -7,7 +7,6 @@ import org.bukkit.entity.WindCharge;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -43,9 +42,11 @@ public class WindChargeParticleRunnable
       amount = Enxada_WindCharge.getInstance()
           .getConfig()
           .getInt("wind_charge_settings.projectile-particles.particle-amount");
-      if (amount > 20) {
+      if (amount > 20)
+      {
          amount = 20;
-         Bukkit.getLogger().log(Level.WARNING, "The amount of particles was defined to 20 to prevent lag");
+         Bukkit.getLogger()
+             .log(Level.WARNING, "The amount of particles was defined to 20 to prevent lag");
       }
    }
 
@@ -59,40 +60,45 @@ public class WindChargeParticleRunnable
       // Sincronizando pra manter a ordem
       synchronized ("windcharge_particles")
       {
-         try
+         for (WindCharge wc : toRemove)
          {
-            // Dando loop nas WindCharges que estão emitindo partículas
-            for (WindCharge wc : Enxada_WindCharge.getInstance().windCharges)
+            Enxada_WindCharge.getInstance().windCharges.remove(wc);
+         }
+
+         // Dando loop nas WindCharges que estão emitindo partículas
+         List<WindCharge> subList = Enxada_WindCharge.getInstance().windCharges;
+         for (WindCharge wc : subList)
+         {
+            boolean applyParticle = true;
+
+            // Vendo quantas já foram emitidas, caso o limite esteja ativo
+            if (allowLimit)
             {
-               boolean applyParticle = true;
+               // Buscando a informações de quantas partículas já foram criadas por esse WindCharge
+               int count = particlesMade.getOrDefault(wc, 0);
 
-               // Vendo quantas já foram emitidas, caso o limite esteja ativo
-               if (allowLimit)
+               // Somando 1 a contagem de partículas criadas
+               if (particlesMade.containsKey(wc))
                {
-                  // Buscando a informações de quantas partículas já foram criadas por esse WindCharge
-                  int count = particlesMade.getOrDefault(wc, 0);
-
-                  // Caso a contagem tenha excedido o limite...
-                  if (count > limit)
-                  {
-                     applyParticle = false;
-                  }
-
-                  // Somando 1 a contagem de partículas criadas
-                  if (particlesMade.containsKey(wc))
-                  {
-                     particlesMade.replace(wc, count + 1);
-                  }
-                  else
-                  {
-                     particlesMade.put(wc, 1);
-                  }
+                  particlesMade.replace(wc, count + 1);
                }
-               if (applyParticle)
+               else
                {
-                  Enxada_WindCharge.getInstance().executor.submit(() -> Enxada_WindCharge.getInstance().windCharges.remove(wc));
+                  particlesMade.put(wc, 1);
                }
 
+               Bukkit.getConsoleSender()
+                   .sendMessage(count + "/" + limit);
+               // Caso a contagem tenha excedido o limite...
+               if (count > limit)
+               {
+                  toRemove.add(wc);
+                  applyParticle = false;
+               }
+            }
+
+            if (applyParticle)
+            {
                // Fazendo a particula dentro de um try catch, pois algumas partículas precisam de tratamento diferente
                try
                {
@@ -106,8 +112,6 @@ public class WindChargeParticleRunnable
                }
             }
          }
-         // Caso o java reclame de eu somar +1 na quantidade de particulas enquanto verifico o Map
-         catch (ConcurrentModificationException ignored){}
       }
    }
 }
