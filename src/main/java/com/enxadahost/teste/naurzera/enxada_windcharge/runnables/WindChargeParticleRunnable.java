@@ -87,8 +87,6 @@ public class WindChargeParticleRunnable
                   particlesMade.put(wc, 1);
                }
 
-               Bukkit.getConsoleSender()
-                   .sendMessage(count + "/" + limit);
                // Caso a contagem tenha excedido o limite...
                if (count > limit)
                {
