@@ -1,0 +1,6 @@
+name: Enxada_WindCharge
+version: '${version}'
+main: com.enxadahost.teste.naurzera.enxada_windcharge.Enxada_WindCharge
+api-version: 1.21
+authors: [ Naur ]
+description: A simple plugin made for EnxadaHost

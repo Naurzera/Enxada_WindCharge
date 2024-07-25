@@ -1,0 +1,26 @@
+wind_charge_settings:
+
+  command: "ewc"
+  staff-permission: enxada.admin
+  no-permission-message: "&cYou don't have enought power!"
+
+  # Allowing big values will not limit the max values for each option.
+  # If very big values are defined, it can lag or even crash the server!
+  allow-big-values: false
+
+  # It's a multiplier for the default speed of a WindCharge
+  projectile-speed-multiplier: 2
+
+  projectile-particles:
+    enable: true
+    particle-type: CRIT
+    particle-amount: 1
+    # in TPS
+    frequency: 1
+    # When a WindCharge is launched to sky, to prevent unnecesssary use of resources,
+    # after a number of particles, the plugin will stop create more particles.
+    # use -1 to turn off
+    max-particles: 100
+
+  # The explosion power when a WindCharge hits the ground
+  explosion-power: 10
