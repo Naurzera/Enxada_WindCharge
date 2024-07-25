@@ -6,7 +6,10 @@ import org.bukkit.Particle;
 import org.bukkit.entity.WindCharge;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 public class WindChargeParticleRunnable
@@ -48,53 +51,63 @@ public class WindChargeParticleRunnable
 
    // Quantas partículas já foram criadas por uma WindCharge
    LinkedHashMap<WindCharge, Integer> particlesMade = new LinkedHashMap<>();
+   List<WindCharge> toRemove = new ArrayList<>();
 
    @Override
    public void run()
    {
-      // Dando loop nas WindCharges que estão emitindo partículas
-      for (WindCharge wc : Enxada_WindCharge.getInstance().windCharges)
+      // Sincronizando pra manter a ordem
+      synchronized ("windcharge_particles")
       {
-         boolean applyParticle = true;
-
-         // Vendo quantas já foram emitidas, caso o limite esteja ativo
-         if (allowLimit)
-         {
-            // Buscando a informações de quantas partículas já foram criadas por esse WindCharge
-            int count = particlesMade.getOrDefault(wc, 0);
-
-            // Caso a contagem tenha excedido o limite...
-            if (count > limit)
-            {
-               applyParticle = false;
-            }
-
-            // Somando 1 a contagem de partículas criadas
-            if (particlesMade.containsKey(wc))
-            {
-               particlesMade.replace(wc, count + 1);
-            }
-            else
-            {
-               particlesMade.put(wc, 1);
-            }
-         }
-         if (applyParticle)
-         {
-            Enxada_WindCharge.getInstance().executor.submit(() -> Enxada_WindCharge.getInstance().windCharges.remove(wc));
-         }
-
-         // Fazendo a particula dentro de um try catch, pois algumas partículas precisam de tratamento diferente
          try
          {
-            wc.getLocation()
-                .getWorld()
-                .spawnParticle(particle, wc.getLocation(), 1,0,0,0);
-         } catch (Exception | Error ex)
-         {
-            Bukkit.getLogger()
-                .log(Level.WARNING, "[Enxada_WindCharge] Invalid particle!");
+            // Dando loop nas WindCharges que estão emitindo partículas
+            for (WindCharge wc : Enxada_WindCharge.getInstance().windCharges)
+            {
+               boolean applyParticle = true;
+
+               // Vendo quantas já foram emitidas, caso o limite esteja ativo
+               if (allowLimit)
+               {
+                  // Buscando a informações de quantas partículas já foram criadas por esse WindCharge
+                  int count = particlesMade.getOrDefault(wc, 0);
+
+                  // Caso a contagem tenha excedido o limite...
+                  if (count > limit)
+                  {
+                     applyParticle = false;
+                  }
+
+                  // Somando 1 a contagem de partículas criadas
+                  if (particlesMade.containsKey(wc))
+                  {
+                     particlesMade.replace(wc, count + 1);
+                  }
+                  else
+                  {
+                     particlesMade.put(wc, 1);
+                  }
+               }
+               if (applyParticle)
+               {
+                  Enxada_WindCharge.getInstance().executor.submit(() -> Enxada_WindCharge.getInstance().windCharges.remove(wc));
+               }
+
+               // Fazendo a particula dentro de um try catch, pois algumas partículas precisam de tratamento diferente
+               try
+               {
+                  wc.getLocation()
+                      .getWorld()
+                      .spawnParticle(particle, wc.getLocation(), 1, 0, 0, 0);
+               } catch (Exception | Error ex)
+               {
+                  Bukkit.getLogger()
+                      .log(Level.WARNING, "[Enxada_WindCharge] Invalid particle!");
+               }
+            }
          }
+         // Caso o java reclame de eu somar +1 na quantidade de particulas enquanto verifico o Map
+         catch (ConcurrentModificationException ignored){}
       }
    }
 }
