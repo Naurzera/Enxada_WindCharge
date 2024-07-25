@@ -95,7 +95,7 @@ public class WindChargeListener
             if (playersImmunes.contains(player))
             {
                // Cancelar o dano
-               event.setCancelled(true);
+               event.setDamage(0);
             }
          }
       }
