@@ -22,5 +22,5 @@ wind_charge_settings:
     # use -1 to turn off
     max-particles: 100
 
-  # The explosion power when a WindCharge hits the ground
+  # The explosion power when a WindCharge hits something
   explosion-power: 10
